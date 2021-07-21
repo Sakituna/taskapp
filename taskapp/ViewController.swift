@@ -9,8 +9,9 @@ import UIKit
 import RealmSwift   // ←追加
 import UserNotifications    // 追加
 
-class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegate {
+class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var searchBar: UISearchBar!
     
     // Realmインスタンスを取得する
     let realm = try! Realm()  // ←追加
@@ -20,15 +21,20 @@ class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegat
     // 以降内容をアップデートするとリスト内は自動的に更新される。
     var taskArray = try! Realm().objects(Task.self).sorted(byKeyPath: "date", ascending: true)  // ←追加
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
         tableView.dataSource = self
         tableView.delegate = self
+        searchBar.delegate = self
     }
     
+    // 入力画面から戻ってきた時に TableView を更新させる
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tableView.reloadData()
+    }
     // データの数（＝セルの数）を返すメソッド
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return taskArray.count
@@ -39,7 +45,7 @@ class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegat
         // 再利用可能な cell を得る
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         
-        // Cellに値を設定する.  --- ここから ---
+        // Cellに値を設定する
         let task = taskArray[indexPath.row]
         cell.textLabel?.text = task.title
         
@@ -48,18 +54,14 @@ class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegat
         
         let dateString:String = formatter.string(from: task.date)
         cell.detailTextLabel?.text = dateString
-        // --- ここまで追加 ---
+        
         
         return cell
     }
     
     // 各セルを選択した時に実行されるメソッド
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        // 各セルを選択した時に実行されるメソッド
-        func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-            performSegue(withIdentifier: "cellSegue",sender: nil) // ←追加する
-        }
+        performSegue(withIdentifier: "cellSegue",sender: nil) // ←追加する
     }
     
     // セルが削除が可能なことを伝えるメソッド
@@ -69,7 +71,7 @@ class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegat
     
     // Delete ボタンが押された時に呼ばれるメソッド
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        // --- ここから ---
+        
         if editingStyle == .delete {
             // 削除するタスクを取得する
             let task = self.taskArray[indexPath.row]
@@ -92,15 +94,32 @@ class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegat
                     print("---------------/")
                 }
             }
-        } // --- ここまで変更 ---
-        // --- ここから ---
+        }
         if editingStyle == .delete {
             // データベースから削除する
             try! realm.write {
                 self.realm.delete(self.taskArray[indexPath.row])
                 tableView.deleteRows(at: [indexPath], with: .fade)
             }
-        } // --- ここまで追加 ---
+        }
+    }
+    //検索バー
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String){
+        let predicate = NSPredicate(format: "category = %@",searchBar.text!)
+        taskArray = realm.objects(Task.self).filter(predicate)
+    
+        tableView.reloadData()
+    }
+    
+    //キャンセルボタンが押された時の処理
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        // Stop doing the search stuff
+        // and clear the text in the search bar
+        searchBar.text = ""
+        // Hide the cancel button
+        searchBar.showsCancelButton = false
+        // You could also change the position, frame etc of the searchBar
+        
     }
     
     // segue で画面遷移する時に呼ばれる
@@ -121,11 +140,5 @@ class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegat
             inputViewController.task = task
         }
     }
-    // 入力画面から戻ってきた時に TableView を更新させる
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        tableView.reloadData()
-    }
 }
-
 
