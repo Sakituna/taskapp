@@ -96,14 +96,8 @@ class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegat
                 }
             }
         }
-        if editingStyle == .delete {
-            // データベースから削除する
-            try! realm.write {
-                self.realm.delete(self.taskArray[indexPath.row])
-                tableView.deleteRows(at: [indexPath], with: .fade)
-            }
-        }
     }
+    
     //検索バー
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String){
         
