@@ -1,10 +1,9 @@
 //
 //  Task.swift
-//  
+//  taskapp
 //
-//  Created by Sakiko Watanabe on 2021/07/19.
+//  Created by Sakiko Watanabe on 2021/07/22.
 //
-
 import RealmSwift
 
 class Task: Object {
