@@ -28,6 +28,7 @@ class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegat
         tableView.dataSource = self
         tableView.delegate = self
         searchBar.delegate = self
+        
     }
     
     // 入力画面から戻ってきた時に TableView を更新させる
@@ -105,23 +106,15 @@ class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegat
     }
     //検索バー
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String){
+        
         let predicate = NSPredicate(format: "category = %@",searchBar.text!)
         taskArray = realm.objects(Task.self).filter(predicate)
-    
+        
+        if searchText.isEmpty {
+            taskArray = realm.objects(Task.self)
+        }
         tableView.reloadData()
     }
-    
-    //キャンセルボタンが押された時の処理
-    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        // Stop doing the search stuff
-        // and clear the text in the search bar
-        searchBar.text = ""
-        // Hide the cancel button
-        searchBar.showsCancelButton = false
-        // You could also change the position, frame etc of the searchBar
-        
-    }
-    
     // segue で画面遷移する時に呼ばれる
     override func prepare(for segue: UIStoryboardSegue, sender: Any?){
         let inputViewController:InputViewController = segue.destination as! InputViewController
@@ -140,5 +133,6 @@ class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegat
             inputViewController.task = task
         }
     }
+    
 }
 

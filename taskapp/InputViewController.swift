@@ -30,7 +30,7 @@ class InputViewController: UIViewController {
         categoryTextField.text = task.category
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
+    @IBAction func saveButton(_ sender: Any) {
         try! realm.write {
             self.task.title = self.titleTextField.text!
             self.task.contents = self.contentsTextView.text
@@ -39,7 +39,7 @@ class InputViewController: UIViewController {
             self.realm.add(self.task, update: .modified)
         }
         setNotification(task: task)   // 追加
-        super.viewWillDisappear(animated)
+        self.navigationController!.popViewController(animated: true)
     }
     
     // タスクのローカル通知を登録する --- ここから ---
@@ -81,7 +81,7 @@ class InputViewController: UIViewController {
             }
         }
     }
-    
+
     @objc func dismissKeyboard(){
         // キーボードを閉じる
         view.endEditing(true)
